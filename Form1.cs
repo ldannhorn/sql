@@ -25,6 +25,6 @@ namespace ProjektSQL
 
     public class Table
     {
-
+        private List<int> id;
     }
 }
