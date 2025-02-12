@@ -37,6 +37,7 @@
             this.textBoxSqlCommand.Name = "textBoxSqlCommand";
             this.textBoxSqlCommand.Size = new System.Drawing.Size(776, 20);
             this.textBoxSqlCommand.TabIndex = 0;
+            this.textBoxSqlCommand.TextChanged += new System.EventHandler(this.textBoxSqlCommand_TextChanged);
             // 
             // Form1
             // 

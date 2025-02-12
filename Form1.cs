@@ -16,5 +16,15 @@ namespace ProjektSQL
         {
             InitializeComponent();
         }
+
+        private void textBoxSqlCommand_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+    }
+
+    public class Table
+    {
+
     }
 }
