@@ -26,6 +26,9 @@ namespace ProjektSQL
                 case "insert":
                     Insert(args);
                     break;
+                case "update":
+                    Update(args);
+                    break;
             }
 
 
@@ -76,6 +79,15 @@ namespace ProjektSQL
             return table.Insert(args);
         }
 
+        private bool Update(string[] query)
+        {
+            /*
+            UPDATE Symtax:
+            UPDATE table_name SET ("value", "value") WHERE condition;
+            */
+
+            return false;
+        }
 
     }
 }
