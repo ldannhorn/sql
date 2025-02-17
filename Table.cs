@@ -12,7 +12,7 @@ namespace ProjektSQL
 
         public Table(string name, string[] attributes)
         {
-            this.name = name;
+            this.name = name.toLower();
             ids = new List<int>();
             table = new List<string[]>();
             this.attributes = attributes;
@@ -20,7 +20,7 @@ namespace ProjektSQL
 
         public Table(string name, string[] attributes, List<int> id, List<string[]> table)
         {
-            this.name = name;
+            this.name = name.toLower();
             this.attributes = attributes;
             ids = id;
             this.table = table;
@@ -29,6 +29,19 @@ namespace ProjektSQL
         public bool Insert(int id, string[] values)
         {
             if (ids.Contains(id)) return false;
+            ids.Add(id);
+            table.Add(values);
+            return true;
+        }
+        public bool Insert(string[] id_values)
+        {
+            int id;
+            bool idIsInt = int.TryParse(id_values[0], out id);
+            if (!idIsInt) return false;
+
+            string[] values = new string[id_values.Length - 1];
+            Array.Copy(query, 1, values, 0, id_values.Length - 1);
+
             ids.Add(id);
             table.Add(values);
             return true;
