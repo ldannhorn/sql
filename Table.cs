@@ -5,19 +5,22 @@ namespace ProjektSQL
 {
     public class Table
     {
+        public string name;
         private List<int> ids;
         private List<string[]> table;
         private string[] attributes;
 
-        public Table(string[] attributes)
+        public Table(string name, string[] attributes)
         {
+            this.name = name;
             ids = new List<int>();
             table = new List<string[]>();
             this.attributes = attributes;
         }
 
-        public Table(string[] attributes, List<int> id, List<string[]> table)
+        public Table(string name, string[] attributes, List<int> id, List<string[]> table)
         {
+            this.name = name;
             this.attributes = attributes;
             ids = id;
             this.table = table;

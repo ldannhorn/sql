@@ -19,9 +19,9 @@ namespace ProjektSQL
         public string Interpret(string query)
         {
 
-            string[] args = query.Split(' ');
+            string[] args = query.ToLower().Split(' ');
 
-            switch (args[0].ToLower())
+            switch (args[0])
             {
                 case "insert":
                     Insert(args);
@@ -34,6 +34,14 @@ namespace ProjektSQL
 
         private bool Insert(string[] query)
         {
+            // 2. Argument INTO?
+            if (query[1] != "into")
+                return false;
+
+            foreach (Table table in this.tables) {
+                if (table.name)
+            }
+
             return false;
         }
 
