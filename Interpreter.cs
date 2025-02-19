@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ProjektSQL
@@ -67,14 +68,14 @@ namespace ProjektSQL
             // Daten herausarbeiten
             string[] datapart = new string[query.Length - 4];
             Array.Copy(query, 4, datapart, 0, query.Length - 4);
-            string data = string.join(' ', datapart); // Entfernte Leerzeichen wieder hinzufügen
+            string data = string.Join(" ", datapart); // Entfernte Leerzeichen wieder hinzufügen
 
             if (!data.EndsWith(");") || !data.StartsWith("("))
                 return false;
 
-            data = data.TrimStart("(\"").TrimEnd("\");");
-            
-            string[] args = data.Split("\", \"");
+            data = data.TrimStart('(', '"').TrimEnd('"', ')', ';');
+
+            string[] args = Regex.Split(data, "\", \"");
 
             return table.Insert(args);
         }

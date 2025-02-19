@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 
 namespace ProjektSQL
@@ -12,7 +13,7 @@ namespace ProjektSQL
 
         public Table(string name, string[] attributes)
         {
-            this.name = name.toLower();
+            this.name = name.ToLower();
             ids = new List<int>();
             table = new List<string[]>();
             this.attributes = attributes;
@@ -20,7 +21,7 @@ namespace ProjektSQL
 
         public Table(string name, string[] attributes, List<int> id, List<string[]> table)
         {
-            this.name = name.toLower();
+            this.name = name.ToLower();
             this.attributes = attributes;
             ids = id;
             this.table = table;
@@ -40,7 +41,7 @@ namespace ProjektSQL
             if (!idIsInt) return false;
 
             string[] values = new string[id_values.Length - 1];
-            Array.Copy(query, 1, values, 0, id_values.Length - 1);
+            Array.Copy(id_values, 1, values, 0, id_values.Length - 1);
 
             ids.Add(id);
             table.Add(values);
