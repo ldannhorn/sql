@@ -10,11 +10,11 @@ namespace ProjektSQL
     class Interpreter
     {
         
-        private Table[] tables;
+        private Database database;
 
-        public Interpreter(Table[] tables)
+        public Interpreter(Database database)
         {
-            this.tables = tables;
+            this.database = database;
         }
 
         public string Interpret(string query)
@@ -49,14 +49,7 @@ namespace ProjektSQL
                 return false;
 
             // Finde table (3. Argument)
-            Table table = null;
-            foreach (Table table1 in this.tables) {
-                if (table1.name == query[2])
-                {
-                    table = table1;
-                    break;
-                }
-            }
+            Table table = database.GetTable(query[2]);
             // Name nicht vorhanden
             if (table == null)
                 return false;
@@ -89,6 +82,78 @@ namespace ProjektSQL
 
             return false;
         }
+
+        private Database Where(string conditions)
+        {
+            /*
+            WHERE Syntax:
+            WHERE condition AND condition OR condition
+
+            Condition Syntax:
+            table_name.attribute = "string"/table_name.attribute
+            table_name.attribute != "string"/table_name.attribute
+            table_name.attribute > "string"/table_name.attribute
+            table_name.attribute < "string"/table_name.attribute
+            table_name.attribute >= "string"/table_name.attribute
+            table_name.attribute <= "string"/table_name.attribute
+            */
+
+            string[] arr_conditions = conditions.Split(new string[] { " and ", " or " }, StringSplitOptions.None);
+
+            Database[] result = new Database[arr_conditions.Length];
+            for (int i = 0; i < arr_conditions.Length; i++)
+            {
+                result[i] = Condition(arr_conditions[i]);
+            }
+
+
+        }
+
+
+        private Database Condition(string condition)
+        {
+            string[] args = condition.Split(' ');
+
+            string tableName = args[0].Split('.')[0];
+            string attribute = args[0].Split('.')[1];
+            string op = args[1];
+
+            // Rechten Teil wieder zusammensetzen
+            string[] arr_comp = new string[args.Length - 2];
+            Array.Copy(args, 2, arr_comp, 0, args.Length - 2);
+
+            string comp = string.Join(" ", arr_comp);
+
+            // Vergleich mit String oder anderem Attribut unterscheiden
+            bool isString = comp.StartsWith("\"") && comp.EndsWith("\"");
+
+            Database result;
+
+            switch (op)
+            {
+                case "=":
+                    if (isString)
+                    {
+                        Table leftTable = database.GetTable(tableName);
+                        int[] leftTableIDs = leftTable.GetIDs();
+                        int leftTableAttrIndex = leftTable.IndexOfAttribute(attribute);
+                        if (leftTableAttrIndex == -1)
+                            return null;
+
+                        foreach (int id in leftTableIDs)
+                        {
+                            if (leftTable.Select(id)[leftTableAttrIndex] == comp)
+                                
+
+                        }
+                    }
+                    break;
+            }
+
+
+
+        }
+
 
     }
 }
