@@ -127,8 +127,8 @@ namespace ProjektSQL
             // Vergleich mit String oder anderem Attribut unterscheiden
             bool isString = comp.StartsWith("\"") && comp.EndsWith("\"");
 
+            // Vergleiche durchführen
             Database result;
-
             switch (op)
             {
                 case "=":
@@ -142,7 +142,10 @@ namespace ProjektSQL
 
                         foreach (int id in leftTableIDs)
                         {
-                            if (leftTable.Select(id)[leftTableAttrIndex] == comp)
+                            if (leftTable.Select(id).getValue(leftTableAttrIndex) == comp)
+                            {
+
+                            }
                                 
 
                         }
