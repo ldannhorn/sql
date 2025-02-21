@@ -64,10 +64,34 @@ namespace ProjektSQL
             return true;
         }
 
-        public string[] select(int id)
+        public string[] Select(int id)
         {
             if (!ids.Contains(id)) return new string[attributes.Length];
             return table[ids.IndexOf(id)];
+        }
+
+        public int IndexOfAttribute(string attribute)
+        {
+            for (int i=0; i<attributes.Length; i++)
+            {
+                if (attributes[i] == attribute) return i;
+            }
+            return -1;
+        }
+
+        public int[] GetIDs()
+        {
+            int[] retIDs = new int[ids.Count];
+            ids.CopyTo(retIDs);
+            return retIDs;
+        }
+
+        public Table Copy()
+        {
+            string[] newAttributes = new string[attributes.Length];
+            attributes.CopyTo(newAttributes, 0);
+
+            List<int> newIds = new List<int>(ids);
         }
     }
 }
