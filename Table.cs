@@ -72,6 +72,13 @@ namespace ProjektSQL
             records.Add(new Record(id, values));
             return true;
         }
+        public bool Insert(Record record)
+        {
+            int[] ids = GetIDs();
+            if (ids.Contains(record.getId())) return false;
+            records.Add(record);
+            return true;
+        }
 
         public bool Update(int id, string[] values)
         // Aktualisiert einen Datensatz in der Tabelle sofern die ID existiert
@@ -119,6 +126,13 @@ namespace ProjektSQL
             }
 
             return ids;
+        }
+
+        public string[] GetAttributes()
+        {
+            string[] newAttributes = new string[attributes.Length];
+            attributes.CopyTo(newAttributes, 0);
+            return newAttributes;
         }
 
         public Table Copy()

@@ -112,6 +112,16 @@ namespace ProjektSQL
 
         private Database Condition(string condition)
         {
+            /*
+            Condition Syntax:
+            table_name.attribute = "string"/table_name.attribute
+            table_name.attribute != "string"/table_name.attribute
+            table_name.attribute > "string"/table_name.attribute
+            table_name.attribute < "string"/table_name.attribute
+            table_name.attribute >= "string"/table_name.attribute
+            table_name.attribute <= "string"/table_name.attribute
+            */
+
             string[] args = condition.Split(' ');
 
             string tableName = args[0].Split('.')[0];
@@ -134,23 +144,39 @@ namespace ProjektSQL
                 case "=":
                     if (isString)
                     {
-                        Table leftTable = database.GetTable(tableName);
+                        // Tabelle der linken Seite holen
+                        Table leftTable = this.database.GetTable(tableName);
                         int[] leftTableIDs = leftTable.GetIDs();
                         int leftTableAttrIndex = leftTable.IndexOfAttribute(attribute);
                         if (leftTableAttrIndex == -1)
                             return null;
 
+                        // Ausgabedatenbank erstellen und Ausgabetabelle verfügbarmachen
+                        // Die Ausgabedatenbank hat eine Tabelle identisch zur linken verglichenen Tabelle
+                        result = new Database(new Table[] { new Table(tableName, leftTable.GetAttributes(), new List<Record>()) });
+                        Table resultTable = result.GetTable(tableName);
+
+                        // Einträge mit dem String vergleichen und gleiche der Tabelle der Ausgabedatenbank hinzufügen
                         foreach (int id in leftTableIDs)
                         {
-                            if (leftTable.Select(id).getValue(leftTableAttrIndex) == comp)
+                            Record leftTableRecord = leftTable.Select(id);
+                            if (leftTableRecord.GetValue(leftTableAttrIndex) == comp)
                             {
-
+                                resultTable.Insert(leftTableRecord);
                             }
-                                
-
                         }
+
+                        return result;
+
                     }
+                    else
+                    {
+
+                    }
+
                     break;
+
+
             }
 
 

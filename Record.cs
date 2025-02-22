@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace ProjektSQL
 {
+    // Datensatz-Klasse
     class Record
     {
+        // Werte und erzwungener Primärschlüssel
         int id;
         string[] values;
 
@@ -28,7 +30,7 @@ namespace ProjektSQL
             return id;
         }
 
-        public string getValue(int index)
+        public string GetValue(int index)
         {
             if (index < 0 || index >= values.Length) return null;
             return values[index];
