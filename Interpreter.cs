@@ -90,12 +90,12 @@ namespace ProjektSQL
             WHERE condition AND condition OR condition
 
             Condition Syntax:
-            table_name.attribute = "string"/table_name.attribute
-            table_name.attribute != "string"/table_name.attribute
-            table_name.attribute > "string"/table_name.attribute
-            table_name.attribute < "string"/table_name.attribute
-            table_name.attribute >= "string"/table_name.attribute
-            table_name.attribute <= "string"/table_name.attribute
+            (not) table_name.attribute = "string"/table_name.attribute
+            (not) table_name.attribute != "string"/table_name.attribute
+            (not) table_name.attribute > "string"/table_name.attribute
+            (not) table_name.attribute < "string"/table_name.attribute
+            (not) table_name.attribute >= "string"/table_name.attribute
+            (not) table_name.attribute <= "string"/table_name.attribute
             */
 
             string[] arr_conditions = conditions.Split(new string[] { " and ", " or " }, StringSplitOptions.None);
@@ -114,48 +114,81 @@ namespace ProjektSQL
         {
             /*
             Condition Syntax:
-            table_name.attribute = "string"/table_name.attribute
-            table_name.attribute != "string"/table_name.attribute
-            table_name.attribute > "string"/table_name.attribute
-            table_name.attribute < "string"/table_name.attribute
-            table_name.attribute >= "string"/table_name.attribute
-            table_name.attribute <= "string"/table_name.attribute
+            (not) table_name.attribute = "string"/table_name.attribute
+            (not) table_name.attribute != "string"/table_name.attribute
+            (not) table_name.attribute > "string"/table_name.attribute
+            (not) table_name.attribute < "string"/table_name.attribute
+            (not) table_name.attribute >= "string"/table_name.attribute
+            (not) table_name.attribute <= "string"/table_name.attribute
             */
 
             string[] args = condition.Split(' ');
 
-            string tableName = args[0].Split('.')[0];
-            string attribute = args[0].Split('.')[1];
-            string op = args[1];
+            // "not" vorhanden? -> Index verschieben?
+            int indexOffset = 0;
+            bool not = false;
+            if (args[0] == "not")
+            {
+                indexOffset = 1;
+                not = true;
+            }
+
+            // Condition-Teile auslesen
+            string tableName = args[0 + indexOffset].Split('.')[0 + indexOffset];
+            string attribute = args[0 + indexOffset].Split('.')[1 + indexOffset];
+            string op = args[1 + indexOffset];
 
             // Rechten Teil wieder zusammensetzen
-            string[] arr_comp = new string[args.Length - 2];
-            Array.Copy(args, 2, arr_comp, 0, args.Length - 2);
+            string[] arr_comp = new string[args.Length - 2 - indexOffset];
+            Array.Copy(args, 2 + indexOffset, arr_comp, 0, args.Length - 2 - indexOffset);
 
             string comp = string.Join(" ", arr_comp);
 
             // Vergleich mit String oder anderem Attribut unterscheiden
             bool isString = comp.StartsWith("\"") && comp.EndsWith("\"");
 
-            // Vergleiche durchführen
+
             Database result;
+
+            // Tabelle der linken Seite holen
+            Table leftTable = this.database.GetTable(tableName);
+            int[] leftTableIDs = leftTable.GetIDs();
+            int leftTableAttrIndex = leftTable.IndexOfAttribute(attribute);
+            if (leftTableAttrIndex == -1)
+                return null;
+
+            // Ggf. Tabelle der rechten Seite holen (sonst behalten die Variablen ihre Platzhalterwerte)
+            Table rightTable = new Table("0", new string[] { });
+            int[] rightTableIDs = new int[0];
+            int rightTableAttrIndex = 0;
+            if (!isString)
+            {
+                string[] rightArg = comp.Split('.');
+
+                string rightTableName = rightArg[0];
+                rightTable = this.database.GetTable(rightTableName);
+
+                rightTableIDs = rightTable.GetIDs();
+
+                string rightAttribute = rightArg[1];
+                rightTableAttrIndex = rightTable.IndexOfAttribute(rightAttribute);
+                if (rightTableAttrIndex == -1)
+                    return null;
+            }
+
+            // Ausgabedatenbank erstellen und Ausgabetabelle verfügbar machen
+            // Die Ausgabedatenbank hat eine Tabelle identisch zur linken verglichenen Tabelle
+            result = new Database(new Table[] { new Table(tableName, leftTable.GetAttributes(), new List<Record>()) });
+            Table resultTable = result.GetTable(tableName);
+
+
+            // Vergleiche durchführen
             switch (op)
             {
+
                 case "=":
                     if (isString)
                     {
-                        // Tabelle der linken Seite holen
-                        Table leftTable = this.database.GetTable(tableName);
-                        int[] leftTableIDs = leftTable.GetIDs();
-                        int leftTableAttrIndex = leftTable.IndexOfAttribute(attribute);
-                        if (leftTableAttrIndex == -1)
-                            return null;
-
-                        // Ausgabedatenbank erstellen und Ausgabetabelle verfügbarmachen
-                        // Die Ausgabedatenbank hat eine Tabelle identisch zur linken verglichenen Tabelle
-                        result = new Database(new Table[] { new Table(tableName, leftTable.GetAttributes(), new List<Record>()) });
-                        Table resultTable = result.GetTable(tableName);
-
                         // Einträge mit dem String vergleichen und gleiche der Tabelle der Ausgabedatenbank hinzufügen
                         foreach (int id in leftTableIDs)
                         {
@@ -163,26 +196,177 @@ namespace ProjektSQL
                             if (leftTableRecord.GetValue(leftTableAttrIndex) == comp)
                             {
                                 resultTable.Insert(leftTableRecord);
+
                             }
                         }
-
-                        return result;
-
                     }
                     else
                     {
-
+                        // Jeden Eintrag mit jedem Eintrag der rechten Tabelle vergleichen und gleiche der Ausgabedatenbank hinzufügen
+                        foreach (int lID in leftTableIDs)
+                        {
+                            Record leftTableRecord = leftTable.Select(lID);
+                            foreach (int rID in rightTableIDs)
+                            {
+                                Record rightTableRecord = rightTable.Select(rID);
+                                if (leftTableRecord.GetValue(leftTableAttrIndex) == rightTableRecord.GetValue(rightTableAttrIndex))
+                                {
+                                    resultTable.Insert(leftTableRecord);
+                                }
+                            }
+                        }
                     }
+                    return result;
+                    
 
-                    break;
+                case "!=":
+                    if (isString)
+                    {
+                        // Einträge mit dem String vergleichen und ungleiche der Tabelle der Ausgabedatenbank hinzufügen
+                        foreach (int id in leftTableIDs)
+                        {
+                            Record leftTableRecord = leftTable.Select(id);
+                            if (leftTableRecord.GetValue(leftTableAttrIndex) != comp)
+                            {
+                                resultTable.Insert(leftTableRecord);
+
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Jeden Eintrag mit jedem Eintrag der rechten Tabelle vergleichen und gleiche der Ausgabedatenbank hinzufügen
+                        foreach (int lID in leftTableIDs)
+                        {
+                            Record leftTableRecord = leftTable.Select(lID);
+                            foreach (int rID in rightTableIDs)
+                            {
+                                Record rightTableRecord = rightTable.Select(rID);
+                                if (leftTableRecord.GetValue(leftTableAttrIndex) != rightTableRecord.GetValue(rightTableAttrIndex))
+                                {
+                                    resultTable.Insert(leftTableRecord);
+                                }
+                            }
+                        }
+                    }
+                    return result;
+
+                // Aus: https://learn.microsoft.com/en-us/dotnet/api/system.string.compareto
+                // Comparing 'some text' with '123': 1
+                // Comparing 'some text' with 'some text': 0
+                // Comparing 'some text' with 'Some Text': -1
+
+
+                case ">":
+                    if (isString)
+                    {
+                        // Einträge mit dem String vergleichen und größere der Tabelle der Ausgabedatenbank hinzufügen
+                        foreach (int id in leftTableIDs)
+                        {
+                            Record leftTableRecord = leftTable.Select(id);
+                            if (leftTableRecord.GetValue(leftTableAttrIndex).CompareTo(comp) > 0)
+                            {
+                                resultTable.Insert(leftTableRecord);
+
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Jeden Eintrag mit jedem Eintrag der rechten Tabelle vergleichen und größere der Ausgabedatenbank hinzufügen
+                        foreach (int lID in leftTableIDs)
+                        {
+                            Record leftTableRecord = leftTable.Select(lID);
+                            foreach (int rID in rightTableIDs)
+                            {
+                                Record rightTableRecord = rightTable.Select(rID);
+                                if (leftTableRecord.GetValue(leftTableAttrIndex).CompareTo(rightTableRecord.GetValue(rightTableAttrIndex)) > 0)
+                                {
+                                    resultTable.Insert(leftTableRecord);
+                                }
+                            }
+                        }
+                    }
+                    return result;
+
+
+                case "<":
+                    if (isString)
+                    {
+                        // Einträge mit dem String vergleichen und kleinere der Tabelle der Ausgabedatenbank hinzufügen
+                        foreach (int id in leftTableIDs)
+                        {
+                            Record leftTableRecord = leftTable.Select(id);
+                            if (leftTableRecord.GetValue(leftTableAttrIndex).CompareTo(comp) < 0)
+                            {
+                                resultTable.Insert(leftTableRecord);
+
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Jeden Eintrag mit jedem Eintrag der rechten Tabelle vergleichen und kleinere der Ausgabedatenbank hinzufügen
+                        foreach (int lID in leftTableIDs)
+                        {
+                            Record leftTableRecord = leftTable.Select(lID);
+                            foreach (int rID in rightTableIDs)
+                            {
+                                Record rightTableRecord = rightTable.Select(rID);
+                                if (leftTableRecord.GetValue(leftTableAttrIndex).CompareTo(rightTableRecord.GetValue(rightTableAttrIndex)) < 0)
+                                {
+                                    resultTable.Insert(leftTableRecord);
+                                }
+                            }
+                        }
+                    }
+                    return result;
+
+
+                case ">=":
+                    if (isString)
+                    {
+                        // Einträge mit dem String vergleichen und größere/gleiche der Tabelle der Ausgabedatenbank hinzufügen
+                        foreach (int id in leftTableIDs)
+                        {
+                            Record leftTableRecord = leftTable.Select(id);
+                            if (leftTableRecord.GetValue(leftTableAttrIndex).CompareTo(comp) >= 0)
+                            {
+                                resultTable.Insert(leftTableRecord);
+
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Jeden Eintrag mit jedem Eintrag der rechten Tabelle vergleichen und größere/gleiche der Ausgabedatenbank hinzufügen
+                        foreach (int lID in leftTableIDs)
+                        {
+                            Record leftTableRecord = leftTable.Select(lID);
+                            foreach (int rID in rightTableIDs)
+                            {
+                                Record rightTableRecord = rightTable.Select(rID);
+                                if (leftTableRecord.GetValue(leftTableAttrIndex).CompareTo(rightTableRecord.GetValue(rightTableAttrIndex)) < 0)
+                                {
+                                    resultTable.Insert(leftTableRecord);
+                                }
+                            }
+                        }
+                    }
+                    return result;
 
 
             }
 
+                    
 
 
         }
 
 
+
     }
+
+
 }
+

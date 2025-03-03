@@ -75,7 +75,7 @@ namespace ProjektSQL
         public bool Insert(Record record)
         {
             int[] ids = GetIDs();
-            if (ids.Contains(record.getId())) return false;
+            if (ids.Contains(record.GetId())) return false;
             records.Add(record);
             return true;
         }
@@ -85,7 +85,7 @@ namespace ProjektSQL
         {
             int[] ids = GetIDs();
             if (!ids.Contains(id)) return false;
-            Select(id).setValues(values);
+            Select(id).SetValues(values);
             return true;
         }
 
@@ -122,7 +122,7 @@ namespace ProjektSQL
             int[] ids = new int[records.Count];
             for (int i = 0; i < records.Count; i++)
             {
-                ids[i] = records[i].getId();
+                ids[i] = records[i].GetId();
             }
 
             return ids;
@@ -143,7 +143,7 @@ namespace ProjektSQL
             List<Record> newRecords = new List<Record>();
             foreach (var record in records)
             {
-                newRecords.Add(new Record(record.getId(), record.getValues()));
+                newRecords.Add(new Record(record.GetId(), record.GetValues()));
             }
 
             return new Table(name, newAttributes, newRecords);

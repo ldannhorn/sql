@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace ProjektSQL
 {
     // Datensatz-Klasse
-    class Record
+    public class Record
     {
         // Werte und erzwungener Primärschlüssel
         int id;
@@ -25,7 +25,7 @@ namespace ProjektSQL
             this.values = values;
         }
 
-        public int getId()
+        public int GetId()
         {
             return id;
         }
@@ -36,14 +36,14 @@ namespace ProjektSQL
             return values[index];
         }
 
-        public string[] getValues()
+        public string[] GetValues()
         {
             string[] retValues = new string[values.Length];
             values.CopyTo(retValues, 0);
             return retValues;
         }
 
-        public bool setValues(string[] values)
+        public bool SetValues(string[] values)
         {
             if (values.Length != this.values.Length) return false;
             this.values = values;
