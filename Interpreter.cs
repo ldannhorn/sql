@@ -114,33 +114,25 @@ namespace ProjektSQL
         {
             /*
             Condition Syntax:
-            (not) table_name.attribute = "string"/table_name.attribute
-            (not) table_name.attribute != "string"/table_name.attribute
-            (not) table_name.attribute > "string"/table_name.attribute
-            (not) table_name.attribute < "string"/table_name.attribute
-            (not) table_name.attribute >= "string"/table_name.attribute
-            (not) table_name.attribute <= "string"/table_name.attribute
+            table_name.attribute = "string"/table_name.attribute
+            table_name.attribute != "string"/table_name.attribute
+            table_name.attribute > "string"/table_name.attribute
+            table_name.attribute < "string"/table_name.attribute
+            table_name.attribute >= "string"/table_name.attribute
+            table_name.attribute <= "string"/table_name.attribute
             */
 
             string[] args = condition.Split(' ');
 
-            // "not" vorhanden? -> Index verschieben?
-            int indexOffset = 0;
-            bool not = false;
-            if (args[0] == "not")
-            {
-                indexOffset = 1;
-                not = true;
-            }
 
             // Condition-Teile auslesen
-            string tableName = args[0 + indexOffset].Split('.')[0 + indexOffset];
-            string attribute = args[0 + indexOffset].Split('.')[1 + indexOffset];
-            string op = args[1 + indexOffset];
+            string tableName = args[0].Split('.')[0];
+            string attribute = args[0].Split('.')[1];
+            string op = args[1];
 
             // Rechten Teil wieder zusammensetzen
-            string[] arr_comp = new string[args.Length - 2 - indexOffset];
-            Array.Copy(args, 2 + indexOffset, arr_comp, 0, args.Length - 2 - indexOffset);
+            string[] arr_comp = new string[args.Length - 2];
+            Array.Copy(args, 2, arr_comp, 0, args.Length - 2);
 
             string comp = string.Join(" ", arr_comp);
 
