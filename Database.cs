@@ -15,6 +15,7 @@ namespace ProjektSQL
             this.tables = tables;
         }
 
+
         public Table GetTable(string table_name)
         {
             foreach (Table table in tables)
@@ -31,6 +32,11 @@ namespace ProjektSQL
             for (int i = 0; i < tables.Length; i++)
                 newTables[i] = tables[i].Copy();
             return new Database(newTables);
+        }
+
+        public int GetTableAmount()
+        {
+            return this.tables.Length;
         }
     }
 }

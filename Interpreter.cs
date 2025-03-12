@@ -90,21 +90,43 @@ namespace ProjektSQL
             WHERE condition AND condition OR condition
 
             Condition Syntax:
-            (not) table_name.attribute = "string"/table_name.attribute
-            (not) table_name.attribute != "string"/table_name.attribute
-            (not) table_name.attribute > "string"/table_name.attribute
-            (not) table_name.attribute < "string"/table_name.attribute
-            (not) table_name.attribute >= "string"/table_name.attribute
-            (not) table_name.attribute <= "string"/table_name.attribute
+            table_name.attribute = "string"/table_name.attribute
+            table_name.attribute != "string"/table_name.attribute
+            table_name.attribute > "string"/table_name.attribute
+            table_name.attribute < "string"/table_name.attribute
+            table_name.attribute >= "string"/table_name.attribute
+            table_name.attribute <= "string"/table_name.attribute
             */
 
+            // Conditions trennen
             string[] arr_conditions = conditions.Split(new string[] { " and ", " or " }, StringSplitOptions.None);
 
-            Database[] result = new Database[arr_conditions.Length];
+            // Ergebnisdatenbanken sammeln
+            Database[] cond_results = new Database[arr_conditions.Length];
             for (int i = 0; i < arr_conditions.Length; i++)
             {
-                result[i] = Condition(arr_conditions[i]);
+                cond_results[i] = Condition(arr_conditions[i]);
             }
+
+            // Condition-Ergebnisse verknüpfen
+            int n_tables = 0;
+            foreach (Database database in cond_results)
+            {
+                n_tables += database.GetTableAmount();
+            }
+
+            Database result = new Database( new Table[n_tables] );
+
+            for (int i = 0; i < arr_conditions.Length - 2; i++)
+            {
+                if (cond_results[i] == null) continue;
+
+                if (arr_conditions[i+1] == " and ")
+                {
+
+                }
+            }
+            
 
 
         }
@@ -338,7 +360,7 @@ namespace ProjektSQL
                             foreach (int rID in rightTableIDs)
                             {
                                 Record rightTableRecord = rightTable.Select(rID);
-                                if (leftTableRecord.GetValue(leftTableAttrIndex).CompareTo(rightTableRecord.GetValue(rightTableAttrIndex)) < 0)
+                                if (leftTableRecord.GetValue(leftTableAttrIndex).CompareTo(rightTableRecord.GetValue(rightTableAttrIndex)) >= 0)
                                 {
                                     resultTable.Insert(leftTableRecord);
                                 }
@@ -348,7 +370,41 @@ namespace ProjektSQL
                     return result;
 
 
+                case "<=":
+                    if (isString)
+                    {
+                        // Einträge mit dem String vergleichen und kleinere/gleiche der Tabelle der Ausgabedatenbank hinzufügen
+                        foreach (int id in leftTableIDs)
+                        {
+                            Record leftTableRecord = leftTable.Select(id);
+                            if (leftTableRecord.GetValue(leftTableAttrIndex).CompareTo(comp) <= 0)
+                            {
+                                resultTable.Insert(leftTableRecord);
+
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Jeden Eintrag mit jedem Eintrag der rechten Tabelle vergleichen und kleinere/gleiche der Ausgabedatenbank hinzufügen
+                        foreach (int lID in leftTableIDs)
+                        {
+                            Record leftTableRecord = leftTable.Select(lID);
+                            foreach (int rID in rightTableIDs)
+                            {
+                                Record rightTableRecord = rightTable.Select(rID);
+                                if (leftTableRecord.GetValue(leftTableAttrIndex).CompareTo(rightTableRecord.GetValue(rightTableAttrIndex)) <= 0)
+                                {
+                                    resultTable.Insert(leftTableRecord);
+                                }
+                            }
+                        }
+                    }
+                    return result;
+
             }
+
+            return null;
 
                     
 
