@@ -135,6 +135,11 @@ namespace ProjektSQL
             return newAttributes;
         }
 
+        public List<Record> GetRecords()
+        {
+            return new List<Record>(records);
+        }
+
         public Table Copy()
         {
             string[] newAttributes = new string[attributes.Length];

@@ -10,8 +10,8 @@ namespace ProjektSQL
     public class Record
     {
         // Werte und erzwungener Primärschlüssel
-        int id;
-        string[] values;
+        private int id;
+        private string[] values;
 
         public Record()
         {
@@ -47,6 +47,20 @@ namespace ProjektSQL
         {
             if (values.Length != this.values.Length) return false;
             this.values = values;
+            return true;
+        }
+
+        public bool Equals(Record record)
+        {
+            if (values.Length != record.GetValues().Length) return false;
+
+            for (int i=0; i< values.Length; i++)
+            {
+                if (this.values[i] != record.GetValue(i))
+                {
+                    return false;
+                }
+            }
             return true;
         }
     }

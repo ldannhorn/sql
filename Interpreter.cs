@@ -109,21 +109,50 @@ namespace ProjektSQL
             }
 
             // Condition-Ergebnisse verknüpfen
-            int n_tables = 0;
-            foreach (Database database in cond_results)
-            {
-                n_tables += database.GetTableAmount();
-            }
+            string[] args = conditions.Split(' ');
 
+            int n_tables = cond_results.Length;
             Database result = new Database( new Table[n_tables] );
 
-            for (int i = 0; i < arr_conditions.Length - 2; i++)
+            for (int i = 0; i < arr_conditions.Length; i++)
             {
+                if (i + 1 > arr_conditions.Length - 1) break;
+
                 if (cond_results[i] == null) continue;
 
                 if (arr_conditions[i+1] == " and ")
                 {
+                    Database left_db = cond_results[i];
+                    List<Record> left_db_records = left_db.GetTable(0).GetRecords();
+                    Database right_db = cond_results[i+1];
+                    List<Record> right_db_records = right_db.GetTable(0).GetRecords();
 
+                    Table res_table = new Table(i.ToString(), left_db.GetTable(0).GetAttributes());
+
+                    foreach (Record r in left_db_records)
+                    {
+                        if (r == null) continue;
+                        foreach (Record r2 in right_db_records)
+                        {
+                            if (r2 == null) continue;
+                            if (r.Equals(r2))
+                            {
+                                res_table.Insert(r);
+                            }
+                        }
+
+                    }
+
+                    result.SetTable(i, res_table);
+
+                }
+                else if (arr_conditions[i+1] == " or ")
+                {
+
+                }
+                else
+                {
+                    continue;
                 }
             }
             

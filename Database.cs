@@ -21,10 +21,16 @@ namespace ProjektSQL
             foreach (Table table in tables)
             {
                 if (table.name == table_name)
-                    return table;
+                    return table.Copy();
             }
             return null;
         }
+        public Table GetTable(int index)
+        {
+            Table table = tables[index].Copy();
+            return table;
+        }
+
 
         public Database Copy()
         {
@@ -38,5 +44,11 @@ namespace ProjektSQL
         {
             return this.tables.Length;
         }
+
+        public void SetTable(int index, Table table)
+        {
+            tables[index] = table;
+        }
+
     }
 }
